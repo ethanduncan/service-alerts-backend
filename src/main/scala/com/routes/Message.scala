@@ -1,3 +1,3 @@
 package com.example
 
-case class message(message: String)
+case class Message(message: String)

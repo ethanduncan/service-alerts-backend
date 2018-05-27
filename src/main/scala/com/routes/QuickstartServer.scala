@@ -5,17 +5,14 @@ import scala.concurrent.duration.Duration
 
 import akka.actor.{ ActorRef, ActorSystem }
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
 
-object QuickstartServer extends App with UserRoutes {
+object QuickstartServer extends App with Routes {
 
   implicit val system: ActorSystem = ActorSystem("helloAkkaHttpServer")
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 
-  val serviceActor: ActorRef = system.actorOf(UserRegistryActor.props, "userRegistryActor")
-
-  lazy val routes: Route = userRoutes
+  val serviceActor: ActorRef = system.actorOf(ServiceActor.props, "serviceActor")
 
   Http().bindAndHandle(routes, "localhost", 8080)
 
