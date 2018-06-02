@@ -10,6 +10,8 @@ import akka.http.scaladsl.server.directives.RouteDirectives.complete
 import akka.pattern.ask
 import akka.util.Timeout
 import com.example.ServiceActor.{ ActionPerformed, SendMessage }
+import models.MessageRequest
+import utils.JsonSupport
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -30,9 +32,9 @@ trait Routes extends JsonSupport {
         pathEnd {
           concat(
             post {
-              entity(as[Message]) { message =>
+              entity(as[MessageRequest]) { message =>
                 val messageSent: Future[ActionPerformed] =
-                  (serviceActor ? SendMessage).mapTo[ActionPerformed]
+                  (serviceActor ? SendMessage(message.message)).mapTo[ActionPerformed]
                 onSuccess(messageSent) { performed =>
                   log.info("Message Sent")
                   complete((StatusCodes.OK, performed))
