@@ -9,12 +9,13 @@ import akka.http.scaladsl.server.directives.MethodDirectives.post
 import akka.http.scaladsl.server.directives.RouteDirectives.complete
 import akka.pattern.ask
 import akka.util.Timeout
-import com.example.ServiceActor.{ ActionPerformed, SendMessage }
+import com.example.ServiceActor.{ ActionPerformed, GetServices, SendMessage }
 import models.MessageRequest
 import utils.JsonSupport
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
+import scala.util.{ Failure, Success }
 
 trait Routes extends JsonSupport {
 
@@ -39,6 +40,18 @@ trait Routes extends JsonSupport {
                   log.info("Message Sent")
                   complete((StatusCodes.OK, performed))
                 }
+              }
+            })
+        })
+    } ~ pathPrefix("services") {
+      concat(
+        pathEnd {
+          concat(
+            get {
+              onComplete(serviceActor ? GetServices) {
+                case Success(resp: Future[ActionPerformed]) => complete(StatusCodes.OK, resp)
+                case Success(resp) => complete(StatusCodes.BadRequest, "dont know")
+                case Failure(e) => complete(StatusCodes.InternalServerError)
               }
             })
         })
