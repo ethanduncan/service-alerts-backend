@@ -27,7 +27,8 @@ class ServiceActor extends Actor with ActorLogging {
     case GetServices =>
       sender() ? {
         getAllServices().map {
-          x => ActionPerformed(x)
+          case Some(x) => ActionPerformed(x.toString)
+          case None => ActionPerformed("something went wrong")
         }
       }
   }

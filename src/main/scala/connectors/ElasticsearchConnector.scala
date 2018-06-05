@@ -1,22 +1,35 @@
 package connectors
 
+import akka.event.Logging
 import akka.http.scaladsl.model.StatusCodes._
+import akka.http.scaladsl.unmarshalling.Unmarshal
+import com.example.Routes
 import com.typesafe.config.ConfigFactory
+import models.{ ServiceResponse }
+import utils.JsonSupport
 
-object ElasticsearchConnector extends HttpConnector {
+import scala.concurrent.Future
+
+object ElasticsearchConnector extends HttpConnector with JsonSupport {
 
   lazy val config = ConfigFactory.load("application.conf")
+  lazy val log = Logging(system, classOf[Routes])
 
   lazy val uri = config.getString("elasticsearch.uri")
 
-  def getAllServices() = {
+  def getAllServices(): Future[Option[ServiceResponse]] = {
     val servicesUri = s"${uri}tc/_search"
 
-    httpGetRequest(servicesUri).map {
+    httpGetRequest(servicesUri).flatMap {
       resp =>
         resp.status match {
-          case OK => resp.entity.toString
-          case status => status.toString()
+          case OK =>
+            Unmarshal(resp.entity).to[ServiceResponse].map {
+              x => Some(x)
+            }
+          case status =>
+            log.error(status.toString)
+            Future.successful(None)
         }
     }
   }
