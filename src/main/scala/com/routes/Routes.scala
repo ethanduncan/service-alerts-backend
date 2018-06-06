@@ -9,7 +9,7 @@ import akka.http.scaladsl.server.directives.MethodDirectives.post
 import akka.http.scaladsl.server.directives.RouteDirectives.complete
 import akka.pattern.ask
 import akka.util.Timeout
-import com.example.ServiceActor.{ ActionPerformed, GetServices, SendMessage }
+import com.example.ServiceActor.{ ActionPerformed, GetBadServices, SendMessage, SendBadServiceSMS }
 import models.MessageRequest
 import utils.JsonSupport
 
@@ -43,12 +43,24 @@ trait Routes extends JsonSupport {
               }
             })
         })
-    } ~ pathPrefix("services") {
+    } ~ pathPrefix("bad-services") {
       concat(
         pathEnd {
           concat(
             get {
-              onComplete(serviceActor ? GetServices) {
+              onComplete(serviceActor ? GetBadServices) {
+                case Success(resp: Future[ActionPerformed]) => complete(StatusCodes.OK, resp)
+                case Success(resp) => complete(StatusCodes.BadRequest, "dont know")
+                case Failure(e) => complete(StatusCodes.InternalServerError)
+              }
+            })
+        })
+    } ~ pathPrefix("bad-services-sms") {
+      concat(
+        pathEnd {
+          concat(
+            get {
+              onComplete(serviceActor ? SendBadServiceSMS) {
                 case Success(resp: Future[ActionPerformed]) => complete(StatusCodes.OK, resp)
                 case Success(resp) => complete(StatusCodes.BadRequest, "dont know")
                 case Failure(e) => complete(StatusCodes.InternalServerError)

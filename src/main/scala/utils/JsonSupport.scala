@@ -11,28 +11,28 @@ trait JsonSupport extends DefaultJsonProtocol with SprayJsonSupport {
 
   implicit val actionPerformedJsonFormat = jsonFormat1(ActionPerformed)
 
-  implicit val serviceModelJsonFormat = jsonFormat2(ServiceJson)
+  implicit val serviceModelJsonFormat = jsonFormat2(ServiceModel)
 
-  implicit object ServiceModelFormat extends DefaultJsonProtocol with RootJsonFormat[ServiceModel] {
-    override def write(obj: ServiceModel): JsValue = jsonFormat1(ServiceModel).write(obj)
+  implicit object ServiceModelFormat extends DefaultJsonProtocol with RootJsonFormat[ElasticsearchJsonModel] {
+    override def write(obj: ElasticsearchJsonModel): JsValue = jsonFormat1(ElasticsearchJsonModel).write(obj)
 
-    override def read(json: JsValue): ServiceModel = {
+    override def read(json: JsValue): ElasticsearchJsonModel = {
       val jsonMap = json.asJsObject.fields
-      ServiceModel(
-        jsonMap.get("_source").get.convertTo[ServiceJson])
+      ElasticsearchJsonModel(
+        jsonMap.get("_source").get.convertTo[ServiceModel])
     }
   }
 
-  implicit object ServiceResponseFormat extends DefaultJsonProtocol with RootJsonFormat[ServiceResponse] {
-    override def write(obj: ServiceResponse): JsValue = jsonFormat1(ServiceResponse).write(obj)
+  implicit object ServiceResponseFormat extends DefaultJsonProtocol with RootJsonFormat[ElasticsearchResponse] {
+    override def write(obj: ElasticsearchResponse): JsValue = jsonFormat1(ElasticsearchResponse).write(obj)
 
-    override def read(json: JsValue): ServiceResponse = {
+    override def read(json: JsValue): ElasticsearchResponse = {
       val jsonMap = json.asJsObject.fields
       val hits =
-        jsonMap.get("hits").map(x => x.convertTo[JsObject].getFields("hits")).get.toSeq
-      val y: Seq[ServiceModel] = hits.map(x => x.convertTo[Seq[ServiceModel]]).flatten
-
-      ServiceResponse(y)
+        jsonMap.get("hits").map(x => x.convertTo[JsObject].getFields("hits")).get
+      val jsonModelList: Seq[ElasticsearchJsonModel] =
+        hits.flatMap(x => x.convertTo[Seq[ElasticsearchJsonModel]])
+      ElasticsearchResponse(jsonModelList)
     }
   }
 }

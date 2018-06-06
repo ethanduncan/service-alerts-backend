@@ -1,10 +1,10 @@
-package com.example
+package connectors
 
 import com.example.ServiceActor.ActionPerformed
-import com.typesafe.config.ConfigFactory
 import com.twilio.Twilio
 import com.twilio.`type`.PhoneNumber
 import com.twilio.rest.api.v2010.account.Message
+import com.typesafe.config.ConfigFactory
 
 object TwilioService {
 

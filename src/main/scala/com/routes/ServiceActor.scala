@@ -7,16 +7,17 @@ import akka.util.Timeout
 object ServiceActor {
   final case class ActionPerformed(description: String)
   final case class SendMessage(messageReq: String)
-  final case object GetServices
+  final case object GetBadServices
+  final case object SendBadServiceSMS
 
   def props: Props = Props[ServiceActor]
 }
 
 class ServiceActor extends Actor with ActorLogging {
   import ServiceActor._
-  import TwilioService.sendMessage
+  import connectors.TwilioService.sendMessage
   import scala.concurrent.duration._
-  import connectors.ElasticsearchConnector.getAllServices
+  import connectors.ElasticsearchConnector.{ getBadServices, sendBadServiceSMS }
   import scala.concurrent.ExecutionContext.Implicits.global
 
   implicit val timeout: Timeout = 20 seconds
@@ -24,12 +25,16 @@ class ServiceActor extends Actor with ActorLogging {
   def receive: Receive = {
     case SendMessage(messageReq) =>
       sender() ? sendMessage(messageReq)
-    case GetServices =>
+    case GetBadServices =>
       sender() ? {
-        getAllServices().map {
-          case Some(x) => ActionPerformed(x.toString)
-          case None => ActionPerformed("something went wrong")
+        getBadServices().map {
+          case Some(serviceNames) => serviceNames
+          case None => ActionPerformed("All services okay")
         }
+      }
+    case SendBadServiceSMS =>
+      sender ? {
+        sendBadServiceSMS().map(x => x)
       }
   }
 }

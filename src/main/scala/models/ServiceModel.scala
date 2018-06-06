@@ -1,3 +1,6 @@
 package models
 
-case class ServiceModel(_source: ServiceJson)
+case class ServiceModel(
+  name: String,
+  status: String)
+
