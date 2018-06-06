@@ -1,3 +1,5 @@
 package models
 
-case class ElasticsearchJsonModel(_source: ServiceModel)
+import spray.json.JsValue
+
+case class ElasticsearchJsonModel(_source: JsValue)

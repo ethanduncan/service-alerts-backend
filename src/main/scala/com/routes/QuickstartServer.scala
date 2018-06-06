@@ -1,11 +1,12 @@
-package com.example
-
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
+package com.routes
 
 import akka.actor.{ ActorRef, ActorSystem }
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
+import com.example.{ Routes, ServiceActor }
+
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 
 object QuickstartServer extends App with Routes {
 

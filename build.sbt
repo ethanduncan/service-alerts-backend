@@ -15,6 +15,7 @@ lazy val root = (project in file(".")).
       "com.typesafe.akka" %% "akka-stream"          % akkaVersion,
       "com.typesafe"   % "config" % "1.3.2",
       "com.twilio.sdk" % "twilio" % "7.15.5",
+      "com.github.tototoshi" %% "scala-csv" % "1.3.5",
 
       "com.typesafe.akka" %% "akka-http-testkit"    % akkaHttpVersion % Test,
       "com.typesafe.akka" %% "akka-testkit"         % akkaVersion     % Test,

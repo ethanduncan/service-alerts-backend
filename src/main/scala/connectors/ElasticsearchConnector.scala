@@ -6,7 +6,7 @@ import akka.http.scaladsl.unmarshalling.Unmarshal
 import com.example.Routes
 import com.example.ServiceActor.ActionPerformed
 import com.typesafe.config.ConfigFactory
-import models.ElasticsearchResponse
+import models.{ AssystTicketModel, ElasticsearchResponse, ServiceModel }
 import utils.JsonSupport
 import TwilioService.sendMessage
 
@@ -41,8 +41,8 @@ object ElasticsearchConnector extends HttpConnector with JsonSupport {
       case Some(elasticsearchResp) => {
         val serviceNames = for (
           json <- elasticsearchResp.hits;
-          if json._source.status == "bad"
-        ) yield (json._source.name)
+          if json._source.convertTo[ServiceModel].status == "bad"
+        ) yield (json._source.convertTo[ServiceModel].name)
         Some(ActionPerformed("Bad services: " + serviceNames.mkString(" ")))
       }
       case None => None
@@ -56,6 +56,29 @@ object ElasticsearchConnector extends HttpConnector with JsonSupport {
         actionPerformed
       }
       case None => ActionPerformed("All services okay")
+    }
+  }
+
+  def getTickets(): Future[Option[Seq[AssystTicketModel]]] = {
+    val assystUri = s"${uri}tc-assyst/ticket/_search"
+
+    httpGetRequest(assystUri).flatMap {
+      resp =>
+        resp.status match {
+          case OK =>
+            Unmarshal(resp.entity).to[ElasticsearchResponse].map {
+              x =>
+                val y = for (
+                  json <- x.hits;
+                  ticket = json._source.convertTo[AssystTicketModel]
+                  if ticket.priority == 1 || ticket.priority == 2
+                ) yield (ticket)
+                Some(y)
+            }
+          case status =>
+            log.error(status.toString)
+            Future.successful(None)
+        }
     }
   }
 }

@@ -3,3 +3,4 @@
 .conf
 resources/
 target/
+*.csv

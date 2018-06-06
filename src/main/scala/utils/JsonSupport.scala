@@ -13,17 +13,22 @@ trait JsonSupport extends DefaultJsonProtocol with SprayJsonSupport {
 
   implicit val serviceModelJsonFormat = jsonFormat2(ServiceModel)
 
-  implicit object ServiceModelFormat extends DefaultJsonProtocol with RootJsonFormat[ElasticsearchJsonModel] {
+  //  implicit val assystTicketModelJsonFormat = jsonFormat2(AssystTicketModel)
+  implicit val assystTicketModelJsonFormat = jsonFormat(
+    AssystTicketModel.apply,
+    "Priority", "Status", "SVD Assigned Name", "Date/Time Logged")
+
+  implicit object ElasticsearchJsonModelFormat extends DefaultJsonProtocol with RootJsonFormat[ElasticsearchJsonModel] {
     override def write(obj: ElasticsearchJsonModel): JsValue = jsonFormat1(ElasticsearchJsonModel).write(obj)
 
     override def read(json: JsValue): ElasticsearchJsonModel = {
       val jsonMap = json.asJsObject.fields
       ElasticsearchJsonModel(
-        jsonMap.get("_source").get.convertTo[ServiceModel])
+        jsonMap.get("_source").get.convertTo[JsValue])
     }
   }
 
-  implicit object ServiceResponseFormat extends DefaultJsonProtocol with RootJsonFormat[ElasticsearchResponse] {
+  implicit object ElasticsearchResponseFormat extends DefaultJsonProtocol with RootJsonFormat[ElasticsearchResponse] {
     override def write(obj: ElasticsearchResponse): JsValue = jsonFormat1(ElasticsearchResponse).write(obj)
 
     override def read(json: JsValue): ElasticsearchResponse = {
