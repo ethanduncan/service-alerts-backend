@@ -9,7 +9,7 @@ import com.typesafe.config.ConfigFactory
 import models.{ AssystTicketModel, ElasticsearchResponse, ServiceModel }
 import utils.JsonSupport
 import TwilioService.sendMessage
-
+import spray.json._
 import scala.concurrent.Future
 
 object ElasticsearchConnector extends HttpConnector with JsonSupport {
@@ -36,26 +36,28 @@ object ElasticsearchConnector extends HttpConnector with JsonSupport {
     }
   }
 
-  def getBadServices(): Future[Option[ActionPerformed]] = {
+  def getBadServices(): Future[Option[Seq[JsValue]]] = {
     getAllServices().map {
       case Some(elasticsearchResp) => {
         val serviceNames = for (
           json <- elasticsearchResp.hits;
-          if json._source.convertTo[ServiceModel].status == "bad"
-        ) yield (json._source.convertTo[ServiceModel].name)
-        Some(ActionPerformed("Bad services: " + serviceNames.mkString(" ")))
+          x = json._source.convertTo[ServiceModel] if x.status == "bad"
+        ) yield (json._source)
+
+        Some(serviceNames)
       }
       case None => None
     }
   }
 
-  def sendBadServiceSMS(): Future[ActionPerformed] = {
+  def sendBadServiceSMS(): Future[Option[Seq[JsValue]]] = {
     getBadServices().map {
       case Some(actionPerformed) => {
-        sendMessage(actionPerformed.description)
-        actionPerformed
+        val jsonToString = for (js <- actionPerformed) { js.convertTo[ServiceModel] }
+        sendMessage("Following bad services :" + jsonToString.toString)
+        Some(actionPerformed)
       }
-      case None => ActionPerformed("All services okay")
+      case None => None
     }
   }
 
@@ -70,8 +72,7 @@ object ElasticsearchConnector extends HttpConnector with JsonSupport {
               x =>
                 val y = for (
                   json <- x.hits;
-                  ticket = json._source.convertTo[AssystTicketModel]
-                  if ticket.priority == 1 || ticket.priority == 2
+                  ticket = json._source.convertTo[AssystTicketModel] if ticket.priority == 1 || ticket.priority == 2
                 ) yield (ticket)
                 Some(y)
             }

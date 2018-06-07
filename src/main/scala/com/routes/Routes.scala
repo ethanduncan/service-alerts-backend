@@ -11,6 +11,7 @@ import akka.pattern.ask
 import akka.util.Timeout
 import com.example.ServiceActor._
 import models.MessageRequest
+import spray.json.JsValue
 import utils.JsonSupport
 
 import scala.concurrent.Future
@@ -49,7 +50,7 @@ trait Routes extends JsonSupport {
           concat(
             get {
               onComplete(serviceActor ? GetBadServices) {
-                case Success(resp: Future[ActionPerformed]) => complete(StatusCodes.OK, resp)
+                case Success(resp: Future[Seq[JsValue]]) => complete(StatusCodes.OK, resp)
                 case Success(resp) => complete(StatusCodes.BadRequest, "dont know")
                 case Failure(e) => complete(StatusCodes.InternalServerError)
               }
@@ -61,7 +62,7 @@ trait Routes extends JsonSupport {
           concat(
             get {
               onComplete(serviceActor ? SendBadServiceSMS) {
-                case Success(resp: Future[ActionPerformed]) => complete(StatusCodes.OK, resp)
+                case Success(resp: Future[Seq[JsValue]]) => complete(StatusCodes.OK, resp)
                 case Success(resp) => complete(StatusCodes.BadRequest, "dont know")
                 case Failure(e) => complete(StatusCodes.InternalServerError)
               }
@@ -73,7 +74,7 @@ trait Routes extends JsonSupport {
           concat(
             get {
               onComplete(serviceActor ? GetPriorityTickets) {
-                case Success(resp: Future[ActionPerformed]) => complete(StatusCodes.OK, resp)
+                case Success(resp: Future[Seq[JsValue]]) => complete(StatusCodes.OK, resp)
                 case Success(resp) => complete(StatusCodes.BadRequest, "dont know")
                 case Failure(e) => complete(StatusCodes.InternalServerError)
               }

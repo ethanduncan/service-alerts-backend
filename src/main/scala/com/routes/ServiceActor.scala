@@ -5,6 +5,7 @@ import akka.pattern.ask
 import akka.util.Timeout
 import utils.CSVFileWriter._
 import utils.JsonSupport
+import spray.json._
 
 object ServiceActor {
   final case class ActionPerformed(description: String)
@@ -38,15 +39,20 @@ class ServiceActor extends Actor with ActorLogging with JsonSupport {
       }
     case SendBadServiceSMS =>
       sender() ? {
-        sendBadServiceSMS().map(x => x)
+        sendBadServiceSMS().map {
+          case Some(x) => x
+          case None => Seq(("none").toJson)
+        }
       }
     case GetPriorityTickets =>
       sender() ? {
         getTickets().map {
           case Some(x) => {
-            ActionPerformed(readCSVFile(x).mkString(" "))
+            val list = readCSVFile(x)
+            println(list.toString)
+            for (ticket <- list) yield (x.toJson)
           }
-          case None => ActionPerformed("No new priority tickets")
+          case None => Seq(("none").toJson)
         }
       }
   }

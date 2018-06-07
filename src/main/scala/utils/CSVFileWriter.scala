@@ -21,6 +21,9 @@ object CSVFileWriter {
       value <- values if (!tickets.toString.contains(value.toString))
     ) yield (value)
 
+    println("\n  new = " + newTickets)
+    reader.close()
+
     writeCSVFile(newTickets)
     newTickets
   }
