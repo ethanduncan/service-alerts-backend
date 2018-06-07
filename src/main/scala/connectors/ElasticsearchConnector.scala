@@ -71,7 +71,6 @@ object ElasticsearchConnector extends HttpConnector with JsonSupport {
                 val y = for (
                   json <- x.hits;
                   ticket = json._source.convertTo[AssystTicketModel]
-                  if ticket.priority == 1 || ticket.priority == 2
                 ) yield (ticket)
                 Some(y)
             }

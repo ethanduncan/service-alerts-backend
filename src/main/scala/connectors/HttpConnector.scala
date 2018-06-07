@@ -2,7 +2,7 @@ package connectors
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.{ HttpMethods, HttpRequest, HttpResponse }
+import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
 
 import scala.concurrent.Future
@@ -19,7 +19,10 @@ trait HttpConnector {
     singleRequest(
       HttpRequest(
         method = HttpMethods.GET,
-        uri = uri))
+        uri = uri,
+        entity = HttpEntity(ContentTypes.`application/json`, """{
+                                                               "size" : 250
+                              }""")))
   }
 
 }
