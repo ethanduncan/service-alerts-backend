@@ -43,7 +43,7 @@ object ElasticsearchConnector extends HttpConnector with JsonSupport {
           json <- elasticsearchResp.hits;
           if json._source.convertTo[ServiceModel].status == "bad"
         ) yield (json._source.convertTo[ServiceModel].name)
-        Some(ActionPerformed("Bad services: " + serviceNames.mkString(" ")))
+        Some(ActionPerformed("The following services are bad " + serviceNames.mkString(" ")))
       }
       case None => None
     }

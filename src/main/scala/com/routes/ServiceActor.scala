@@ -44,7 +44,9 @@ class ServiceActor extends Actor with ActorLogging with JsonSupport {
       sender() ? {
         getTickets().map {
           case Some(x) => {
-            ActionPerformed(readCSVFile(x).mkString(" "))
+            val newTickets = readCSVFile(x)
+            ActionPerformed(s"There ${if (newTickets.size > 1) "are" else "is a "} ${newTickets.size} " +
+              s"new priority ${if (newTickets.size > 1) "tickets" else "ticket"} ${newTickets.map(_.name).mkString(" ")}")
           }
           case None => ActionPerformed("No new priority tickets")
         }
