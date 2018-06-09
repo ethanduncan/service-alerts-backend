@@ -42,8 +42,11 @@ object ElasticsearchConnector extends HttpConnector with JsonSupport {
         val serviceNames = for (
           json <- elasticsearchResp.hits;
           if json._source.convertTo[ServiceModel].status == "bad"
-        ) yield (json._source.convertTo[ServiceModel].name)
-        Some(ActionPerformed("The following services are bad " + serviceNames.mkString(" ")))
+        ) yield (json._source.convertTo[ServiceModel].name).toList.mkString(".").toUpperCase
+
+        val addAnd = serviceNames.updated(serviceNames.size - 1, "and " + serviceNames.last)
+
+        Some(ActionPerformed("The following services are bad " + addAnd.mkString(" ")))
       }
       case None => None
     }

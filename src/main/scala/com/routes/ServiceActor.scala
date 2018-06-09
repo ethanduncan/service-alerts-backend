@@ -32,7 +32,9 @@ class ServiceActor extends Actor with ActorLogging with JsonSupport {
     case GetBadServices =>
       sender() ? {
         getBadServices().map {
-          case Some(serviceNames) => serviceNames
+          case Some(serviceNames) =>
+            log.info("testing - " + serviceNames.description)
+            serviceNames
           case None => ActionPerformed("All services okay")
         }
       }
